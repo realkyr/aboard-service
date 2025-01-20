@@ -219,7 +219,7 @@ export class FirestoreService {
     return await ref.update(payload)
   }
 
-  async addDocument(collection, payload) {
+  async addDocument<T>(collection: string, payload: T) {
     const db = admin.firestore()
     const ref = db.collection(collection).doc()
 
