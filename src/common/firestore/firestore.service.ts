@@ -5,6 +5,7 @@ import { firestore } from 'firebase-admin'
 import DocumentReference = firestore.DocumentReference
 import { queryCondition } from './firestore.schema'
 import { deleteQueryBatch } from '../../functions/firestore'
+import DocumentSnapshot = firestore.DocumentSnapshot;
 
 @Injectable()
 export class FirestoreService {
@@ -25,8 +26,8 @@ export class FirestoreService {
   }
 
   async deleteById(
-    collection: String,
-    id: String
+    collection: string,
+    id: string
   ): Promise<firestore.WriteResult> {
     const ref = this.createReferenceByID(collection, id)
 
@@ -60,7 +61,7 @@ export class FirestoreService {
     return ref
   }
 
-  createReferenceByID(collection, id) {
+  createReferenceByID(collection: string, id: string) {
     const db = admin.firestore()
 
     return db.collection(collection).doc(id)
@@ -100,15 +101,17 @@ export class FirestoreService {
     })
   }
 
-  async isDocumentExist(collection: String, id: String) {
+  async isDocumentExist(collection: string, id: string, snapshot?: DocumentSnapshot) {
     const ref = this.createReferenceByID(collection, id)
+    const _snapshot = snapshot || await ref.get()
 
-    if ((await ref.get()).exists) {
+    if (_snapshot.exists) {
       return true
     } else {
-      throw new BadRequestException(
-        `id: ${id} is not exist in ${collection} collection`
-      )
+      throw new BadRequestException({
+        message: `${id} document in ${collection} not found`,
+        code: 'firestore/document-not-found'
+      })
     }
   }
 
@@ -132,7 +135,7 @@ export class FirestoreService {
     })
   }
 
-  async getDocumentById(collection: string, id: string): Promise<any> {
+  async getDocumentById<T>(collection: string, id: string): Promise<T> {
     const db = admin.firestore()
     const ref = db.collection(collection).doc(id)
     const d = await ref.get()
@@ -146,7 +149,7 @@ export class FirestoreService {
     return {
       id: d.id,
       ...d.data()
-    }
+    } as T
   }
 
   async addDocuments(collection: string, payload: any[]): Promise<any[]> {
@@ -228,12 +231,14 @@ export class FirestoreService {
     return { id: ref.id, ...payload }
   }
 
-  async updateDocumentByID(
-    collection: String,
-    id: String,
-    payload
+  async updateDocumentById<T extends Record<string, any>>(
+    collection: string,
+    id: string,
+    payload: T
   ): Promise<firestore.WriteResult> {
     const ref = this.createReferenceByID(collection, id)
+
+    await this.isDocumentExist(collection, id)
 
     return await ref.update(payload)
   }
@@ -294,13 +299,13 @@ export class FirestoreService {
     return docs.size
   }
 
-  async paginateCollection(
+  async paginateCollection<T>(
     collection: string,
     limit: number,
     offset: number,
     sortBy?: string,
     sortOrder: 'asc' | 'desc' = 'asc'
-  ): Promise<any[]> {
+  ): Promise<T[]> {
     const db = admin.firestore();
 
     // Create a reference to the collection
@@ -319,6 +324,6 @@ export class FirestoreService {
     return docs.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    } as T));
   }
 }
