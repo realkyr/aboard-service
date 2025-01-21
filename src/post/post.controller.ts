@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -34,6 +35,7 @@ export class PostsController {
     @Query('sortBy') sortBy?: string,
     @Query('orderBy') orderBy: 'asc' | 'desc' = 'asc',
     @Query('community') community?: string,
+    @Query('createdBy') createdBy?: string,
   ): Promise<{
     pagination: Pagination;
     data: PostType[];
@@ -45,6 +47,7 @@ export class PostsController {
       sortBy,
       orderBy,
       community,
+      createdBy,
     );
   }
 
@@ -108,5 +111,14 @@ export class PostsController {
     }
 
     return this.firestoreService.getDocumentById('posts', id);
+  }
+
+  @Delete(':id')
+  async deletePost(@Param('id') id: string) {
+    if (!id) {
+      throw new NotFoundException('Post ID is required');
+    }
+
+    return this.postService.deletePost(id);
   }
 }

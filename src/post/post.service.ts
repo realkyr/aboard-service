@@ -4,10 +4,14 @@ import { PostType } from '@shared-types/post';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MeilisearchResult } from './types';
 import dayjs from 'dayjs';
+import { FirestoreService } from '../common/firestore/firestore.service';
 
 @Injectable()
 export class PostService {
-  constructor(private readonly meilisearchService: MeilisearchService) {}
+  constructor(
+    private readonly meilisearchService: MeilisearchService,
+    private readonly firestoreService: FirestoreService,
+  ) {}
 
   async getPosts(
     query: string = '',
@@ -16,6 +20,7 @@ export class PostService {
     sortBy?: string,
     orderBy: 'asc' | 'desc' = 'asc',
     community?: string,
+    createdBy?: string,
   ): Promise<{
     pagination: Pagination;
     data: PostType[];
@@ -24,11 +29,16 @@ export class PostService {
     const limitNumber = this.parseNumber(limit, 'Limit');
     const offsetNumber = this.parseNumber(offset, 'Offset');
 
-    const filters = community ? `community = ${community}` : undefined;
+    const filtersArray: string[] = [];
 
-    console.log({
-      filters,
-    });
+    if (community) {
+      filtersArray.push(`community = "${community}"`);
+    }
+
+    if (createdBy) {
+      filtersArray.push(`createdBy = "${createdBy}"`);
+    }
+
     // Fetch results from Meilisearch
     const results: MeilisearchResult =
       (await this.meilisearchService.getPaginatedResults('posts', query, {
@@ -36,7 +46,7 @@ export class PostService {
         offset: offsetNumber,
         sortBy,
         orderBy,
-        filters,
+        filters: filtersArray.join(' AND '),
       })) as unknown as MeilisearchResult;
 
     // Transform and return the results
@@ -48,6 +58,11 @@ export class PostService {
       },
       data: results.hits.map((p) => this.transformPost(p)),
     };
+  }
+
+  async deletePost(id: string) {
+    await this.meilisearchService.deleteDocument('posts', id);
+    return this.firestoreService.deleteById('posts', id);
   }
 
   /**

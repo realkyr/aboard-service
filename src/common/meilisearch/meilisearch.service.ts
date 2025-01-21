@@ -104,4 +104,9 @@ export class MeilisearchService {
       message: 'Document update initiated',
     };
   }
+
+  async deleteDocument(indexName: string, documentId: string) {
+    const index = this.client.index(indexName);
+    return index.deleteDocument(documentId);
+  }
 }
