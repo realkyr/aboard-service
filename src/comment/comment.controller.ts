@@ -7,12 +7,15 @@ import {
   Body,
   Query,
   Patch,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentPayload } from '../types';
 import { FirestoreService } from '../common/firestore/firestore.service';
+import { ValidateUsernameGuard } from '../common/guard/validate-username.guard';
 
 @Controller('comment')
 export class CommentController {
@@ -22,16 +25,18 @@ export class CommentController {
   ) {}
 
   @Post(':postId')
+  @UseGuards(ValidateUsernameGuard)
   async create(
     @Param('postId') postId: string,
     @Body() createCommentDto: CreateCommentDto,
+    @Req() req: { username: string },
   ) {
     const commentPayload: CommentPayload = {
       ...createCommentDto,
       createdAt: new Date(),
       updatedAt: new Date(),
       post: this.firestoreService.createReferenceByID('posts', postId),
-      author: 'system',
+      author: req.username,
     };
 
     return this.commentService.create(postId, commentPayload);
@@ -58,6 +63,7 @@ export class CommentController {
   }
 
   @Patch(':commentId')
+  @UseGuards(ValidateUsernameGuard)
   async update(
     @Param('commentId') commentId: string,
     @Body() updateCommentDto: UpdateCommentDto,
@@ -66,6 +72,7 @@ export class CommentController {
   }
 
   @Delete(':commentId')
+  @UseGuards(ValidateUsernameGuard)
   async delete(@Param('commentId') commentId: string) {
     return this.commentService.delete(commentId);
   }

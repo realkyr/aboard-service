@@ -9,6 +9,8 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { FirestoreService } from '../common/firestore/firestore.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -18,6 +20,7 @@ import { MeilisearchService } from '../common/meilisearch/meilisearch.service';
 import { Pagination } from '@shared-types/pagination';
 import { PostType } from '@shared-types/post';
 import { PostService } from './post.service';
+import { ValidateUsernameGuard } from '../common/guard/validate-username.guard';
 
 @Controller('post')
 export class PostsController {
@@ -52,10 +55,14 @@ export class PostsController {
   }
 
   @Post()
-  async createPost(@Body() payload: CreatePostDto) {
+  @UseGuards(ValidateUsernameGuard)
+  async createPost(
+    @Body() payload: CreatePostDto,
+    @Req() req: { username: string },
+  ) {
     const payloadConverted = {
       ...payload,
-      createdBy: 'system',
+      createdBy: req.username,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -79,6 +86,7 @@ export class PostsController {
   }
 
   @Patch(':id')
+  @UseGuards(ValidateUsernameGuard)
   async updatePost(@Param('id') id: string, @Body() payload: UpdatePostDto) {
     // Ensure the ID is passed and valid
     if (!id) {
@@ -114,6 +122,7 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @UseGuards(ValidateUsernameGuard)
   async deletePost(@Param('id') id: string) {
     if (!id) {
       throw new NotFoundException('Post ID is required');

@@ -89,9 +89,9 @@ export class CommentService {
   async deleteCommentsByPostId(postId: string) {
     await this.firestoreService.deleteDocumentsByQuery(this.collection, [
       {
-        field: 'postId',
+        field: 'post',
         opStr: '==',
-        value: postId,
+        value: this.firestoreService.createReferenceByID('posts', postId),
       },
     ]);
   }

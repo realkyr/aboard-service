@@ -297,6 +297,7 @@ export class FirestoreService {
   ) {
     const ref = this.createReference(collection, conditions);
 
+    console.log({ ref });
     return this.deleteDocuments(ref);
   }
 
