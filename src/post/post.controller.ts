@@ -30,8 +30,8 @@ export class PostsController {
   @Get()
   async getPosts(
     @Query('query') query: string = '',
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
     @Query('sortBy') sortBy?: string,
     @Query('orderBy') orderBy: 'asc' | 'desc' = 'asc',
     @Query('community') community?: string,
@@ -43,7 +43,7 @@ export class PostsController {
     return this.postService.getPosts(
       query,
       limit,
-      offset,
+      page,
       sortBy,
       orderBy,
       community,

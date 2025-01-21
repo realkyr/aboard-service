@@ -64,7 +64,7 @@ export class MeilisearchService {
     query: string,
     options: {
       limit?: number;
-      offset?: number;
+      page?: number;
       sortBy?: string;
       orderBy?: 'asc' | 'desc';
       filters?: string;
@@ -78,8 +78,8 @@ export class MeilisearchService {
       : undefined;
 
     return index.search(query, {
-      limit: options.limit || 10,
-      offset: options.offset || 0,
+      hitsPerPage: options.limit || 10,
+      page: options.page || 0,
       sort,
       filter: options.filters,
     });

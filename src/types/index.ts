@@ -10,3 +10,5 @@ export interface PostDocument {
   title: string;
   updatedAt: Timestamp;
 }
+
+export * from './comment';

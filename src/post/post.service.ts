@@ -15,8 +15,8 @@ export class PostService {
 
   async getPosts(
     query: string = '',
-    limit?: number,
-    offset?: number,
+    limit?: string,
+    page?: string,
     sortBy?: string,
     orderBy: 'asc' | 'desc' = 'asc',
     community?: string,
@@ -26,8 +26,8 @@ export class PostService {
     data: PostType[];
   }> {
     // Convert and validate limit and offset
-    const limitNumber = this.parseNumber(limit, 'Limit');
-    const offsetNumber = this.parseNumber(offset, 'Offset');
+    const limitNumber = parseInt(limit, 10) || 10;
+    const pageNumber = parseInt(page, 10) || 0;
 
     const filtersArray: string[] = [];
 
@@ -43,18 +43,19 @@ export class PostService {
     const results: MeilisearchResult =
       (await this.meilisearchService.getPaginatedResults('posts', query, {
         limit: limitNumber,
-        offset: offsetNumber,
+        page: pageNumber,
         sortBy,
         orderBy,
         filters: filtersArray.join(' AND '),
       })) as unknown as MeilisearchResult;
 
+    console.log({ results });
     // Transform and return the results
     return {
       pagination: {
-        total: results.estimatedTotalHits,
+        total: results.totalHits,
         limit: limitNumber,
-        offset: offsetNumber || 0,
+        page: pageNumber || 0,
       },
       data: results.hits.map((p) => this.transformPost(p)),
     };
@@ -63,20 +64,6 @@ export class PostService {
   async deletePost(id: string) {
     await this.meilisearchService.deleteDocument('posts', id);
     return this.firestoreService.deleteById('posts', id);
-  }
-
-  /**
-   * Parses a number and validates it.
-   * @param value - The value to parse.
-   * @param fieldName - Name of the field for error messages.
-   */
-  private parseNumber(value?: number, fieldName?: string): number | undefined {
-    if (value === undefined) return undefined;
-    const parsed = Number(value);
-    if (isNaN(parsed)) {
-      throw new BadRequestException(`${fieldName} must be a valid number`);
-    }
-    return parsed;
   }
 
   /**

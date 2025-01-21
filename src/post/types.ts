@@ -1,6 +1,6 @@
 // ResultType Interface for Meilisearch results
 export interface MeilisearchResult {
-  estimatedTotalHits?: number;
+  totalHits?: number;
   hits: Array<{
     id: string;
     title: string;

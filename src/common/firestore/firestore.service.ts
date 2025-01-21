@@ -291,6 +291,15 @@ export class FirestoreService {
     });
   }
 
+  async deleteDocumentsByQuery(
+    collection: string,
+    conditions: queryCondition[],
+  ) {
+    const ref = this.createReference(collection, conditions);
+
+    return this.deleteDocuments(ref);
+  }
+
   async deleteQueryBatch(query, resolve) {
     await deleteQueryBatch(query, resolve);
   }

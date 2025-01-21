@@ -5,6 +5,7 @@ import { FirestoreModule } from './common/firestore/firestore.module';
 import { PostModule } from './post/post.module';
 import { ConfigModule } from '@nestjs/config';
 import { MeilisearchModule } from './common/meilisearch/meilisearch.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MeilisearchModule } from './common/meilisearch/meilisearch.module';
     }),
     FirestoreModule,
     PostModule,
+    CommentModule,
     MeilisearchModule,
   ],
   controllers: [AppController],
