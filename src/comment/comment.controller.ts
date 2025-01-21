@@ -2,11 +2,11 @@ import {
   Controller,
   Post,
   Get,
-  Put,
   Delete,
   Param,
   Body,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -57,7 +57,7 @@ export class CommentController {
     );
   }
 
-  @Put(':commentId')
+  @Patch(':commentId')
   async update(
     @Param('commentId') commentId: string,
     @Body() updateCommentDto: UpdateCommentDto,
