@@ -6,10 +6,12 @@ import DocumentReference = firestore.DocumentReference;
 import { queryCondition } from './firestore.schema';
 import { deleteQueryBatch } from '../../functions/firestore';
 import DocumentSnapshot = firestore.DocumentSnapshot;
+import { CollectionReference } from 'firebase-admin/firestore';
+import { PostQuery } from './types';
 
 @Injectable()
 export class FirestoreService {
-  async getDocument(collection: String, conditions: queryCondition[] = []) {
+  async getDocument(collection: string, conditions: queryCondition[] = []) {
     let doc;
 
     const ref = this.createReference(collection, conditions);
@@ -39,9 +41,9 @@ export class FirestoreService {
   }
 
   createReference(
-    collection,
+    collection: string,
     conditions: queryCondition[] = [],
-    limit?,
+    limit?: number,
     group?: boolean,
   ): firestore.Query<firestore.DocumentData> {
     const db = admin.firestore();
@@ -67,16 +69,16 @@ export class FirestoreService {
     return db.collection(collection).doc(id);
   }
 
-  createCollectionReference(collection, doc) {
+  createCollectionReference(collection: string, doc: DocumentReference) {
     const db = doc || admin.firestore();
 
     return db.collection(collection);
   }
 
   async getDocumentsList(
-    collection: String,
+    collection: string,
     conditions?: queryCondition[],
-    limit?,
+    limit?: number,
   ): Promise<Array<any>> {
     const ref = this.createReference(collection, conditions, limit);
 
@@ -90,7 +92,7 @@ export class FirestoreService {
     });
   }
 
-  async getDocumentsListByRef(ref): Promise<Array<any>> {
+  async getDocumentsListByRef(ref: CollectionReference): Promise<Array<any>> {
     const docs = await ref.get();
 
     return docs.docs.map((d) => {
@@ -122,7 +124,7 @@ export class FirestoreService {
   async getCollectionGroupDocuments(
     collection: string,
     conditions: queryCondition[] = [],
-    limit?,
+    limit?: number,
   ): Promise<any[]> {
     const docs = await this.createReference(
       collection,
@@ -297,19 +299,22 @@ export class FirestoreService {
     return await ref.delete();
   }
 
-  async getDocumentsSize(ref) {
+  async getDocumentsSize(ref: CollectionReference) {
     const docs = await ref.get();
 
     return docs.size;
   }
 
-  async paginateCollection<T>(
-    collection: string,
-    limit: number,
-    offset: number,
-    sortBy?: string,
-    sortOrder: 'asc' | 'desc' = 'asc',
-  ): Promise<T[]> {
+  async paginateCollection<T>({
+    collection,
+    limit,
+    startAfterId,
+    sortBy,
+    sortOrder = 'asc',
+    searchField,
+    searchValue,
+    queryConditions = [],
+  }: PostQuery): Promise<T[]> {
     const db = admin.firestore();
 
     // Create a reference to the collection
@@ -321,8 +326,39 @@ export class FirestoreService {
       ref = ref.orderBy(sortBy, sortOrder);
     }
 
-    // Apply offset and limit
-    const docs = await ref.offset(offset).limit(limit).get();
+    // Apply query conditions
+    queryConditions.forEach((condition) => {
+      ref = ref.where(condition.field, condition.opStr, condition.value);
+    });
+
+    // Apply search condition if searchField and searchValue are provided
+    if (searchField && searchValue) {
+      const startSearch = searchValue;
+      const endSearch = searchValue + '\uf8ff'; // Firestore's technique to query strings that start with searchValue
+      console.log({
+        startSearch,
+        endSearch,
+      });
+      ref = ref
+        .where(searchField, '>=', startSearch)
+        .where(searchField, '<=', endSearch);
+    }
+
+    // Use startAfter if startAfterId is provided
+    if (startAfterId) {
+      // Fetch the document to start after
+      const startAfterDoc = await db
+        .collection(collection)
+        .doc(startAfterId)
+        .get();
+      if (!startAfterDoc.exists) {
+        throw new Error(`Document with ID ${startAfterId} does not exist.`);
+      }
+      ref = ref.startAfter(startAfterDoc);
+    }
+
+    // Apply limit
+    const docs = await ref.limit(limit).get();
 
     // Map documents to a response format
     return docs.docs.map(

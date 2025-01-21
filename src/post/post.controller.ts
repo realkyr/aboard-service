@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -12,28 +13,38 @@ import { FirestoreService } from '../common/firestore/firestore.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-posts.dto';
 import { PostDocument } from '../types';
+import { MeilisearchService } from '../common/meilisearch/meilisearch.service';
+import { Pagination } from '@shared-types/pagination';
+import { PostType } from '@shared-types/post';
+import { PostService } from './post.service';
 
 @Controller('post')
 export class PostsController {
-  constructor(private readonly firestoreService: FirestoreService) {}
+  constructor(
+    private readonly firestoreService: FirestoreService,
+    private readonly meilisearchService: MeilisearchService,
+    private readonly postService: PostService,
+  ) {}
 
   @Get()
-  async paginatePosts(
-    @Query('limit') limit: string,
-    @Query('offset') offset: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortOrder') sortOrder: 'asc' | 'desc',
-  ) {
-    const numericLimit = parseInt(limit, 10) || 10;
-    const numericOffset = parseInt(offset, 10) || 0;
-    const sortOrderValidated = sortOrder === 'desc' ? 'desc' : 'asc';
-
-    return this.firestoreService.paginateCollection(
-      'posts',
-      numericLimit,
-      numericOffset,
+  async getPosts(
+    @Query('query') query: string = '',
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+    @Query('sortBy') sortBy?: string,
+    @Query('orderBy') orderBy: 'asc' | 'desc' = 'asc',
+    @Query('community') community?: string,
+  ): Promise<{
+    pagination: Pagination;
+    data: PostType[];
+  }> {
+    return this.postService.getPosts(
+      query,
+      limit,
+      offset,
       sortBy,
-      sortOrderValidated,
+      orderBy,
+      community,
     );
   }
 
@@ -46,7 +57,22 @@ export class PostsController {
       updatedAt: new Date(),
     };
 
-    return this.firestoreService.addDocument('posts', payloadConverted);
+    const result = await this.firestoreService.addDocument(
+      'posts',
+      payloadConverted,
+    );
+
+    await this.meilisearchService.addDocumentWithSubstrings(
+      'posts',
+
+      {
+        ...payloadConverted,
+        id: result.id,
+      },
+      'topic',
+    );
+
+    return result;
   }
 
   @Patch(':id')
@@ -61,11 +87,18 @@ export class PostsController {
       updatedAt: new Date(),
     };
 
-    return this.firestoreService.updateDocumentById(
+    const result = await this.firestoreService.updateDocumentById(
       'posts',
       id,
       payloadConverted,
     );
+
+    await this.meilisearchService.updateDocument('posts', {
+      ...payloadConverted,
+      id,
+    });
+
+    return result;
   }
 
   @Get(':id')

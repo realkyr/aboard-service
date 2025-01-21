@@ -20,7 +20,17 @@ const objectProcess = (data: Record<string, any>) => {
   Object.keys(result).forEach((key) => {
     const value = result[key];
 
-    if (value instanceof Timestamp) {
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      return;
+    }
+
+    if (value instanceof Date) {
+      result[key] = dayjs(value).format();
+    } else if (value instanceof Timestamp) {
       // Convert Firebase Timestamp to ISO string
       result[key] = dayjs(value.toDate()).format();
     } else if (
