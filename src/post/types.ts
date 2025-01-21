@@ -1,6 +1,7 @@
 // ResultType Interface for Meilisearch results
 export interface MeilisearchResult {
   totalHits?: number;
+  totalPages?: number;
   hits: Array<{
     id: string;
     title: string;

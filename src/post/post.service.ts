@@ -66,6 +66,7 @@ export class PostService {
     return {
       pagination: {
         total: results.totalHits,
+        totalPages: results.totalPages,
         limit: limitNumber,
         page: pageNumber || 0,
       },

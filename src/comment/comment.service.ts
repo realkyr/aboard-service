@@ -60,6 +60,7 @@ export class CommentService {
       data: result.hits,
       pagination: {
         total: result.totalHits,
+        totalPages: result.totalPages,
         limit,
         page,
       },
