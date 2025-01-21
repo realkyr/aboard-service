@@ -95,4 +95,10 @@ export class CommentService {
       },
     ]);
   }
+
+  async getCommentsByPostIds(postIds: string[]) {
+    return await this.meilisearchService.getIndex('comments').search('', {
+      filter: postIds.map((id) => `postId = ${id}`).join(' OR '),
+    });
+  }
 }

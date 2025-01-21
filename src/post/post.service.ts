@@ -51,6 +51,17 @@ export class PostService {
         filters: filtersArray.join(' AND '),
       })) as unknown as MeilisearchResult;
 
+    // get comment amount for each post
+    const comments = await this.commentService.getCommentsByPostIds(
+      results.hits.map((p) => p.id),
+    );
+
+    // group by postsId find amount of comments
+    const commentsAmount = comments.hits.reduce((acc, comment) => {
+      acc[comment.postId] = acc[comment.postId] + 1 || 1;
+      return acc;
+    }, {});
+
     // Transform and return the results
     return {
       pagination: {
@@ -58,7 +69,7 @@ export class PostService {
         limit: limitNumber,
         page: pageNumber || 0,
       },
-      data: results.hits.map((p) => this.transformPost(p)),
+      data: results.hits.map((p) => this.transformPost(p, commentsAmount)),
     };
   }
 
@@ -75,8 +86,14 @@ export class PostService {
   /**
    * Transforms raw Meilisearch hit into a PostType.
    * @param post - Raw post data.
+   * @param count - Amount of comments for each post.
    */
-  private transformPost(post: MeilisearchResult['hits'][number]): PostType {
+  private transformPost(
+    post: MeilisearchResult['hits'][number],
+    count: {
+      [key: string]: number;
+    },
+  ): PostType {
     return {
       id: post.id,
       content: post.content,
@@ -85,6 +102,7 @@ export class PostService {
       createdBy: post.createdBy,
       createdAt: dayjs(post.createdAt).toDate(),
       updatedAt: dayjs(post.updatedAt).toDate(),
+      commentsAmount: count[post.id] || 0,
     };
   }
 }
