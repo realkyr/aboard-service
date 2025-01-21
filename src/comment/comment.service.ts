@@ -86,7 +86,7 @@ export class CommentService {
     return { message: 'Comment deleted successfully', id: commentId };
   }
 
-  async deleteDocumentByPostId(postId: string) {
+  async deleteCommentsByPostId(postId: string) {
     await this.firestoreService.deleteDocumentsByQuery(this.collection, [
       {
         field: 'postId',

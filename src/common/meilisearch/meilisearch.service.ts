@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MeiliSearch, SearchResponse } from 'meilisearch';
+import {
+  DocumentsDeletionQuery,
+  MeiliSearch,
+  SearchResponse,
+} from 'meilisearch';
 
 @Injectable()
 export class MeilisearchService {
@@ -57,6 +61,14 @@ export class MeilisearchService {
       }
     }
     return substrings;
+  }
+
+  async deleteDocumentsByFilter(
+    indexName: string,
+    filter: DocumentsDeletionQuery,
+  ) {
+    const index = this.getIndex(indexName);
+    return index.deleteDocuments(filter);
   }
 
   async getPaginatedResults(

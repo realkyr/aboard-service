@@ -1,16 +1,18 @@
 import { MeilisearchService } from '../common/meilisearch/meilisearch.service';
 import { Pagination } from '@shared-types/pagination';
 import { PostType } from '@shared-types/post';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { MeilisearchResult } from './types';
 import dayjs from 'dayjs';
 import { FirestoreService } from '../common/firestore/firestore.service';
+import { CommentService } from '../comment/comment.service';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly meilisearchService: MeilisearchService,
     private readonly firestoreService: FirestoreService,
+    private readonly commentService: CommentService,
   ) {}
 
   async getPosts(
@@ -49,7 +51,6 @@ export class PostService {
         filters: filtersArray.join(' AND '),
       })) as unknown as MeilisearchResult;
 
-    console.log({ results });
     // Transform and return the results
     return {
       pagination: {
@@ -63,7 +64,12 @@ export class PostService {
 
   async deletePost(id: string) {
     await this.meilisearchService.deleteDocument('posts', id);
-    return this.firestoreService.deleteById('posts', id);
+    await this.firestoreService.deleteById('posts', id);
+
+    await this.commentService.deleteCommentsByPostId(id);
+    await this.meilisearchService.deleteDocumentsByFilter('comments', {
+      filter: `postId = "${id}"`,
+    });
   }
 
   /**
