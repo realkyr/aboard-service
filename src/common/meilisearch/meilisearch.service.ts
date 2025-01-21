@@ -11,10 +11,6 @@ export class MeilisearchService {
   private client: MeiliSearch;
 
   constructor(private readonly configService: ConfigService) {
-    console.log({
-      host: this.configService.get<string>('MEILI_HOST'),
-      apiKey: this.configService.get<string>('MEILI_API_KEY'),
-    });
     this.client = new MeiliSearch({
       host: this.configService.get<string>('MEILI_HOST'),
       apiKey: this.configService.get<string>('MEILI_API_KEY'),
@@ -28,7 +24,13 @@ export class MeilisearchService {
   async addDocuments(indexName: string, documents: Record<string, any>[]) {
     const index = this.getIndex(indexName);
     try {
-      return index.addDocuments(documents);
+      const task = await index.addDocuments(documents);
+
+      // Wait for the task to complete
+      return await this.client.waitForTask(task.taskUid, {
+        timeOutMs: 3000, // Maximum wait time (optional)
+        intervalMs: 500, // Check interval (optional)
+      });
     } catch (error) {
       console.error(error);
     }
@@ -49,8 +51,13 @@ export class MeilisearchService {
       ...document,
       substrings: this.generateSubstrings(document[field] || ''),
     };
-    console.log({ processedDocument });
-    return index.addDocuments([processedDocument]);
+    const task = await index.addDocuments([processedDocument]);
+
+    // Wait for the task to complete
+    return await this.client.waitForTask(task.taskUid, {
+      timeOutMs: 3000, // Maximum wait time (optional)
+      intervalMs: 500, // Check interval (optional)
+    });
   }
 
   generateSubstrings(text: string): string[] {

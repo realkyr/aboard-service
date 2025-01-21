@@ -1,14 +1,14 @@
 import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Param,
   Body,
-  Query,
+  Controller,
+  Delete,
+  Get,
+  Param,
   Patch,
-  UseGuards,
+  Post,
+  Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -39,7 +39,11 @@ export class CommentController {
       author: req.username,
     };
 
-    return this.commentService.create(postId, commentPayload);
+    const result = await this.commentService.create(postId, commentPayload);
+
+    console.log({ result });
+
+    return result;
   }
 
   @Get(':postId')
