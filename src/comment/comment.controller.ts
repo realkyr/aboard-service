@@ -50,7 +50,7 @@ export class CommentController {
     @Query('sortBy') sortBy?: string,
     @Query('orderBy') orderBy: 'asc' | 'desc' = 'asc',
   ) {
-    const limitNumber = parseInt(limit, 10) || 10; // Default to 10
+    const limitNumber = parseInt(limit, 10) || 0; // Default to 0
     const pageNumber = parseInt(page, 10) || 0; // Default to 0
 
     return this.commentService.getPaginatedComments(
