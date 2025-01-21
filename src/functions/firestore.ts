@@ -1,37 +1,37 @@
-import * as admin from 'firebase-admin'
+import * as admin from 'firebase-admin';
 
 export const deleteQueryBatch = async (query, resolve) => {
-  const db = admin.firestore()
-  const snapshot = await query.get()
+  const db = admin.firestore();
+  const snapshot = await query.get();
 
-  const batchSize = snapshot.size
+  const batchSize = snapshot.size;
   if (batchSize === 0) {
     // When there are no documents left, we are done
-    resolve()
-    return
+    resolve();
+    return;
   }
 
   // Delete documents in a batch
-  const batch = db.batch()
+  const batch = db.batch();
   snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref)
-  })
-  await batch.commit()
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
 
   // Recurse on the next process tick, to avoid
   // exploding the stack.
   process.nextTick(() => {
-    deleteQueryBatch(query, resolve)
-  })
-}
+    deleteQueryBatch(query, resolve);
+  });
+};
 
 export const deleteCollection = async (collectionPath) => {
-  const db = admin.firestore()
-  const collectionRef = db.collection(collectionPath)
+  const db = admin.firestore();
+  const collectionRef = db.collection(collectionPath);
 
-  const query = collectionRef.orderBy('__name__')
+  const query = collectionRef.orderBy('__name__');
 
   return new Promise<void>((resolve, reject) => {
-    deleteQueryBatch(query, resolve).catch(reject)
-  })
-}
+    deleteQueryBatch(query, resolve).catch(reject);
+  });
+};

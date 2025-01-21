@@ -1,5 +1,5 @@
 export interface queryCondition {
-  field: string
+  field: string;
   opStr:
     | '<'
     | '<='
@@ -10,6 +10,6 @@ export interface queryCondition {
     | 'array-contains'
     | 'in'
     | 'not-in'
-    | 'array-contains-any'
-  value: any
+    | 'array-contains-any';
+  value: any;
 }

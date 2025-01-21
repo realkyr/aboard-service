@@ -11,7 +11,7 @@ import {
 import { FirestoreService } from '../common/firestore/firestore.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-posts.dto';
-import { Post as TPost } from '@shared-types/post';
+import { PostDocument } from '../types';
 
 @Controller('post')
 export class PostsController {
@@ -69,7 +69,7 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPost(@Param('id') id: string): Promise<TPost> {
+  async getPost(@Param('id') id: string): Promise<PostDocument> {
     if (!id) {
       throw new NotFoundException('Post ID is required');
     }
