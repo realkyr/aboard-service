@@ -1,73 +1,133 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Data Wow A Board Assignment Backend (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repository contains the backend service for the Data Wow assignment, built with [NestJS](https://nestjs.com/). The project utilizes a Git submodule and several useful scripts for development and production workflows.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
 
-## Description
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the App](#running-the-app)
+- [Scripts](#scripts)
+- [Project Structure](#project-structure)
+- [License](#license)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
+
+## Features
+
+- **NestJS Framework**: Modular and scalable backend service.
+- **Submodule Integration**: Includes a shared types submodule for reusable type definitions.
+- **Development Utilities**: Preconfigured with ESLint, Prettier, and Jest for linting, formatting, and testing.
+- **External Libraries**: Integrates Firebase Admin, Axios, and Meilisearch for extended functionality.
+
+---
+
+## Prerequisites
+
+Ensure the following tools are installed on your system:
+
+- [Node.js](https://nodejs.org/) (v16+)
+- [Yarn](https://classic.yarnpkg.com/lang/en/) for package management
+- [Git](https://git-scm.com/) for version control
+
+---
 
 ## Installation
 
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/realkyr/<REPOSITORY_NAME>.git
+   ```
+
+2. **Initialize and update the submodule**:
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   yarn install
+   ```
+
+4. **Set up environment variables**:  
+   Copy the provided `.env` file and configure it with your environment-specific values.
+
+   ```bash
+   cp .env.example .env
+   ```
+5. **Get Google Service Account Key**:
+   Download the service account key from the Firebase Console and save it as `src/config/service-account.json`.
+---
+
+## Running the App
+
+### Development
+
+Start the application in development mode with hot-reload:
+
 ```bash
-$ yarn install
+yarn dev
 ```
 
-## Running the app
+The application will run on the default NestJS port (e.g., `http://localhost:3000`).
 
-```bash
-# development
-$ yarn run start
+### Production
 
-# watch mode
-$ yarn run start:dev
+1. **Build the project**:
+   ```bash
+   yarn build
+   ```
 
-# production mode
-$ yarn run start:prod
+2. **Run the production build**:
+   ```bash
+   yarn start:prod
+   ```
+
+---
+
+## Scripts
+
+The following scripts are available in the `package.json`:
+
+- `yarn dev`: Start the app in development mode with hot-reload.
+- `yarn build`: Compile the project to the `dist` directory.
+- `yarn start`: Start the app in standard mode.
+- `yarn start:prod`: Start the production build.
+- `yarn lint`: Run ESLint to analyze and fix code.
+- `yarn test`: Run unit tests with Jest.
+- `yarn test:e2e`: Run end-to-end tests.
+
+---
+
+## Project Structure
+
+```
+.
+├── src
+│   ├── app.module.ts          # Root application module
+│   ├── main.ts                # Application entry point
+│   ├── modules                # Feature modules
+│   │   ├── <feature>          # Feature-specific code
+│   ├── ...
+│   ├── config                 # Configuration files
+│   │   ├── service-account.json  # Firebase service account key
+│   └── common                 # Shared utilities and constants
+├── shared-types               # Submodule for reusable types
+├── .env                       # Environment variables
+├── package.json               # Project metadata and scripts
+├── tsconfig.json              # TypeScript configuration
+├── README.md                  # Documentation
+└── yarn.lock                  # Yarn dependency lockfile
 ```
 
-## Test
-
-```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the [MIT License](./LICENSE). You are free to use, modify, and distribute this project as per the license.
+
+---
+
+If you have any questions or encounter issues, please create an issue in this repository or contact the maintainers.
+```
