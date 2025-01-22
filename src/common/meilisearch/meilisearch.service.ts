@@ -117,6 +117,12 @@ export class MeilisearchService {
     // Add (or update) the document
     const task = await index.addDocuments([updatedDoc]);
 
+    // waiting for the task to complete
+    await this.client.waitForTask(task.taskUid, {
+      timeOutMs: 3000,
+      intervalMs: 500,
+    });
+
     // Optional: Return the task details to track indexing status
     return {
       taskUid: task.taskUid,
